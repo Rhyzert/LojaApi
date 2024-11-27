@@ -54,6 +54,34 @@ export class CouchdbService {
     }
   }
 
+  async updateDocumentByEstoqueId(idEstoque: string, doc: any) {
+    try {
+      // Consulta o documento com base no id_estoque
+      const queryResult = await this.db.find({
+        selector: { id_estoque: idEstoque },
+      });
+  
+      if (queryResult.docs.length === 0) {
+        throw new Error(`Documento com id_estoque '${idEstoque}' não encontrado.`);
+      }
+  
+      const existingDoc = queryResult.docs[0];
+  
+      // Atualiza o documento preservando _id e _rev
+      const updatedDoc = {
+        ...existingDoc,
+        ...doc,
+        _id: existingDoc._id,
+        _rev: existingDoc._rev,
+      };
+  
+      return await this.db.insert(updatedDoc);
+    } catch (error) {
+      console.error('Erro ao atualizar documento por id_estoque:', error.message);
+      throw error;
+    }
+  }
+
   async deleteDocument(id: string) {
     try {
       const existingDoc = await this.getDocument(id);
